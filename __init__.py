@@ -4,8 +4,8 @@ ComfyUI-JSNodes
 A collection of custom nodes for ComfyUI, focusing on audio-video synchronization
 and other utility functions for creative workflows.
 
-Author: Your Name
-Repository: https://github.com/yourusername/ComfyUI-JSNodes
+Author: rongsam
+Repository: https://github.com/rongsam/ComfyUI-JSNodes
 License: MIT
 """
 

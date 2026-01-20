@@ -17,7 +17,7 @@ A collection of custom nodes for [ComfyUI](https://github.com/comfyanonymous/Com
 
 2. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/ComfyUI-JSNodes.git
+   git clone https://github.com/rongsam/ComfyUI-JSNodes.git
    ```
 
 3. Install dependencies:
@@ -122,7 +122,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you encounter any issues or have questions:
-- Open an issue on [GitHub](https://github.com/yourusername/ComfyUI-JSNodes/issues)
+- Open an issue on [GitHub](https://github.com/rongsam/ComfyUI-JSNodes/issues)
 - Check existing issues for solutions
 
 ## 🔄 Changelog

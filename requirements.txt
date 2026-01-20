@@ -1,0 +1,2 @@
+# Python dependencies for ComfyUI-JSNodes
+torch>=2.0.0

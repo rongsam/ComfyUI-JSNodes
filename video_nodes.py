@@ -147,10 +147,10 @@ class VideoStitching:
                     return video_info
                 raise ValueError("Unable to parse video_info")
 
-        # Handle VHS Video Combine format: [bool, [png_path, mp4_path]]
-        if isinstance(data, list) and len(data) >= 2:
+        # Handle VHS Video Combine format: (bool, [png_path, mp4_path]) or [bool, [png_path, mp4_path]]
+        if isinstance(data, (list, tuple)) and len(data) >= 2:
             # Second element should be array of file paths
-            if isinstance(data[1], list) and len(data[1]) >= 2:
+            if isinstance(data[1], (list, tuple)) and len(data[1]) >= 2:
                 # Find the .mp4 file (should be second item)
                 for file_path in data[1]:
                     if isinstance(file_path, str) and file_path.lower().endswith('.mp4'):

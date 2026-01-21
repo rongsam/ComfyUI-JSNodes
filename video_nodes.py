@@ -112,11 +112,11 @@ class VideoStitching:
 
     def _parse_video_info(self, video_info):
         """
-        Parse the JSON output from VHS Video Combine node.
+        Parse the output from VHS Video Combine node.
 
         VHS Video Combine returns format like:
         [
-            true,
+            True,
             [
                 "C:\\path\\to\\video_00003.png",
                 "C:\\path\\to\\video_00003.mp4"
@@ -124,43 +124,51 @@ class VideoStitching:
         ]
 
         Args:
-            video_info (str): JSON string or plain path
+            video_info: Can be a list/dict (direct from VHS) or JSON string
 
         Returns:
             str: Video file path
         """
-        # Try to parse as JSON first
-        try:
-            data = json.loads(video_info)
+        data = video_info
 
-            # Handle VHS Video Combine format: [bool, [png_path, mp4_path]]
-            if isinstance(data, list) and len(data) >= 2:
-                # Second element should be array of file paths
-                if isinstance(data[1], list) and len(data[1]) >= 2:
-                    # Find the .mp4 file (should be second item)
-                    for file_path in data[1]:
-                        if isinstance(file_path, str) and file_path.lower().endswith('.mp4'):
-                            print(f"✓ Parsed VHS output, found MP4: {file_path}")
-                            return file_path
-                    # If no .mp4 found, take the last item
-                    return data[1][-1]
+        # If it's a string, try to parse as JSON
+        if isinstance(video_info, str):
+            try:
+                data = json.loads(video_info)
+            except json.JSONDecodeError:
+                # If not JSON, assume it's a direct file path
+                video_info = video_info.strip()
+                if video_info:
+                    print(f"✓ Using direct path: {video_info}")
+                    return video_info
+                raise ValueError("Unable to parse video_info")
 
-            # Handle dict format (legacy or other sources)
-            elif isinstance(data, dict):
-                return data.get('filename') or data.get('path')
+        # Handle VHS Video Combine format: [bool, [png_path, mp4_path]]
+        if isinstance(data, list) and len(data) >= 2:
+            # Second element should be array of file paths
+            if isinstance(data[1], list) and len(data[1]) >= 2:
+                # Find the .mp4 file (should be second item)
+                for file_path in data[1]:
+                    if isinstance(file_path, str) and file_path.lower().endswith('.mp4'):
+                        print(f"✓ Parsed VHS output, found MP4: {file_path}")
+                        return file_path
+                # If no .mp4 found, take the last item
+                return data[1][-1]
 
-            # Handle simple string in array
-            elif isinstance(data, list) and len(data) > 0:
-                return str(data[0])
+        # Handle dict format (legacy or other sources)
+        elif isinstance(data, dict):
+            path = data.get('filename') or data.get('path')
+            if path:
+                print(f"✓ Extracted from dict: {path}")
+                return path
 
-        except json.JSONDecodeError:
-            # If not JSON, assume it's a direct file path
-            video_info = video_info.strip()
-            if video_info:
-                print(f"✓ Using direct path: {video_info}")
-                return video_info
+        # Handle simple string in array
+        elif isinstance(data, list) and len(data) > 0:
+            path = str(data[0])
+            print(f"✓ Extracted from list: {path}")
+            return path
 
-        raise ValueError("Unable to parse video_info. Expected VHS Video Combine JSON output or file path.")
+        raise ValueError("Unable to parse video_info. Expected VHS Video Combine output format.")
 
     def _extract_prefix_pattern(self, filename):
         """

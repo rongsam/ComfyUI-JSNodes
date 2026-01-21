@@ -10,19 +10,22 @@ License: MIT
 """
 
 from .audio_nodes import AudioPadToFrames
+from .video_nodes import VideoStitching
 
 # Central registry for all nodes in this package
 NODE_CLASS_MAPPINGS = {
     "AudioPadToFrames": AudioPadToFrames,
+    "VideoStitching": VideoStitching,
 }
 
 # Display names that appear in ComfyUI interface
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AudioPadToFrames": "🔇 Audio Pad to Frames",
+    "VideoStitching": "🎬 Video Stitching",
 }
 
 # Package metadata
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
 
 # Print initialization message

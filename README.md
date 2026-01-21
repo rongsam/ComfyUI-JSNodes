@@ -26,7 +26,12 @@ A collection of custom nodes for [ComfyUI](https://github.com/comfyanonymous/Com
    pip install -r requirements.txt
    ```
 
-4. Restart ComfyUI
+4. **Install ffmpeg** (required for Video Stitching node):
+   - **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
+   - **Linux**: `sudo apt install ffmpeg`
+   - **Mac**: `brew install ffmpeg`
+
+5. Restart ComfyUI
 
 ## 🎵 Available Nodes
 
@@ -60,6 +65,53 @@ Audio: 3 seconds → Pads 2 seconds of silence
 Audio: 7 seconds → Trims last 2 seconds
 ```
 
+---
+
+### Video Nodes
+
+#### 🎬 Video Stitching
+Automatically finds and stitches multiple video files with the same naming pattern into a single continuous video.
+
+**Location:** `JSNodes/Video`
+
+**What it does:**
+- Parses VHS Video Combine node output
+- Finds all videos with the same filename prefix pattern
+- Stitches them together using ffmpeg (no re-encoding for speed)
+- Outputs a single concatenated video file
+
+**Inputs:**
+- `video_info` (STRING): JSON output from VHS Video Combine node
+- `output_prefix` (STRING): Filename prefix for the output video (default: "stitched")
+
+**Outputs:**
+- `output_path` (STRING): Path to the stitched video file
+
+**How it works:**
+1. Extracts video path from VHS Video Combine JSON output
+2. Identifies the filename pattern (e.g., `video_0003.mp4` → prefix is `video`)
+3. Searches for all files matching `{prefix}_*.mp4` in the same directory
+4. Sorts them by filename in ascending order
+5. Uses ffmpeg concat demuxer to stitch without re-encoding
+6. Outputs as `{output_prefix}_stitched.mp4`
+
+**Use Case:**
+Perfect for batch video generation workflows where ComfyUI generates multiple video segments (e.g., `video_0001.mp4`, `video_0002.mp4`, `video_0003.mp4`) and you want to combine them into one continuous video automatically.
+
+**Example:**
+```
+Input: VHS generates "output_0005.mp4"
+Found files: output_0001.mp4, output_0002.mp4, output_0003.mp4, output_0004.mp4, output_0005.mp4
+Output: stitched_stitched.mp4 (all 5 videos combined)
+```
+
+**Requirements:**
+- ffmpeg must be installed and available in PATH
+- All videos must have the same codec/encoding for seamless stitching
+- Videos must follow the pattern: `{prefix}_{number}.mp4`
+
+---
+
 ## 🛠️ Development
 
 ### Project Structure
@@ -67,6 +119,7 @@ Audio: 7 seconds → Trims last 2 seconds
 ComfyUI-JSNodes/
 ├── __init__.py              # Package initialization and node registry
 ├── audio_nodes.py           # Audio processing nodes
+├── video_nodes.py           # Video processing nodes
 ├── requirements.txt         # Python dependencies
 ├── README.md               # This file
 ├── LICENSE                 # MIT License
@@ -99,6 +152,7 @@ ComfyUI-JSNodes/
 - Python >= 3.8
 - PyTorch >= 2.0.0
 - ComfyUI (latest version recommended)
+- ffmpeg (for Video Stitching node)
 
 ## 🤝 Contributing
 
@@ -117,6 +171,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI) - The amazing UI for Stable Diffusion
+- [VHS (Video Helper Suite)](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) - Video processing for ComfyUI
 - ComfyUI community for inspiration and support
 
 ## 📞 Support
@@ -126,6 +181,11 @@ If you encounter any issues or have questions:
 - Check existing issues for solutions
 
 ## 🔄 Changelog
+
+### v0.2.0 (Latest)
+- ✨ Added `Video Stitching` node for automatic video concatenation
+- 🎥 Supports VHS Video Combine workflow integration
+- ⚡ Fast stitching without re-encoding using ffmpeg
 
 ### v0.1.0 (Initial Release)
 - ✨ Added `Audio Pad to Frames` node for audio-video synchronization

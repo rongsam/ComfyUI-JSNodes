@@ -11,6 +11,278 @@ import subprocess
 from pathlib import Path
 
 
+class SubtitleBurnIn:
+    """
+    Subtitle Burn-In Node
+
+    Burns subtitles into video files using ffmpeg with customizable styling.
+
+    This node takes a video file and subtitle file (SRT format), then creates
+    a new video with the subtitles permanently embedded (burned-in).
+
+    Features:
+    - Preserves original video encoding, bitrate, and resolution
+    - Customizable font size, color, outline, and position
+    - Sequential numbering for output files
+    - Saves in same directory as source video
+
+    Inputs:
+        video_path (STRING): Full path to input video file (.mp4)
+        subtitle_path (STRING): Full path to subtitle file (.srt)
+        filename_prefix (STRING): Prefix for output filename
+        font_size (INT): Size of subtitle font (default: 24)
+        font_color (STRING): Color of subtitle text (default: "white")
+        outline_color (STRING): Color of text outline (default: "black")
+        outline_width (INT): Width of text outline (default: 2)
+        position (COMBO): Vertical position of subtitles
+        margin_v (INT): Vertical margin from edge in pixels
+
+    Outputs:
+        output_path (STRING): Path to the generated video file
+
+    Output Format:
+        <filename_prefix>_00001.mp4 (sequential numbering)
+
+    Example:
+        video_path: C:/videos/movie.mp4
+        subtitle_path: C:/videos/movie.srt
+        filename_prefix: "movie_subbed"
+        → Output: C:/videos/movie_subbed_00001.mp4
+    """
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "video_path": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "Full path to input video file (.mp4)"
+                }),
+                "subtitle_path": ("STRING", {
+                    "default": "",
+                    "multiline": False,
+                    "tooltip": "Full path to subtitle file (.srt)"
+                }),
+                "filename_prefix": ("STRING", {
+                    "default": "subtitled",
+                    "multiline": False,
+                    "tooltip": "Prefix for output filename"
+                }),
+                "font_size": ("INT", {
+                    "default": 24,
+                    "min": 8,
+                    "max": 72,
+                    "step": 1,
+                    "tooltip": "Size of subtitle font"
+                }),
+                "font_color": (["white", "yellow", "black", "red", "green", "blue", "cyan", "magenta"], {
+                    "default": "white",
+                    "tooltip": "Color of subtitle text"
+                }),
+                "outline_color": (["black", "white", "dark_gray", "none"], {
+                    "default": "black",
+                    "tooltip": "Color of text outline"
+                }),
+                "outline_width": ("INT", {
+                    "default": 2,
+                    "min": 0,
+                    "max": 10,
+                    "step": 1,
+                    "tooltip": "Width of text outline (0 = no outline)"
+                }),
+                "position": (["bottom", "top", "middle"], {
+                    "default": "bottom",
+                    "tooltip": "Vertical position of subtitles"
+                }),
+                "margin_v": ("INT", {
+                    "default": 20,
+                    "min": 0,
+                    "max": 200,
+                    "step": 5,
+                    "tooltip": "Vertical margin from edge in pixels"
+                }),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("output_path",)
+    FUNCTION = "burn_subtitles"
+    CATEGORY = "JSNodes/Video"
+    OUTPUT_NODE = True
+
+    def burn_subtitles(self, video_path, subtitle_path, filename_prefix,
+                      font_size, font_color, outline_color, outline_width,
+                      position, margin_v):
+        """
+        Main execution function that burns subtitles into video.
+
+        Args:
+            video_path (str): Path to input video file
+            subtitle_path (str): Path to subtitle file
+            filename_prefix (str): Prefix for output filename
+            font_size (int): Font size for subtitles
+            font_color (str): Color of subtitle text
+            outline_color (str): Color of text outline
+            outline_width (int): Width of text outline
+            position (str): Position of subtitles (bottom/top/middle)
+            margin_v (int): Vertical margin from edge
+
+        Returns:
+            tuple: Path to the output video file
+        """
+        try:
+            # Validate input files
+            video_file = Path(video_path)
+            subtitle_file = Path(subtitle_path)
+
+            if not video_file.exists():
+                raise ValueError(f"Video file not found: {video_path}")
+            if not subtitle_file.exists():
+                raise ValueError(f"Subtitle file not found: {subtitle_path}")
+
+            print(f"🎬 Input video: {video_file.name}")
+            print(f"📄 Subtitle file: {subtitle_file.name}")
+
+            # Get output directory (same as input video)
+            output_dir = video_file.parent
+
+            # Find next available sequential number
+            counter = 1
+            while True:
+                output_filename = f"{filename_prefix}_{counter:05d}.mp4"
+                output_path = output_dir / output_filename
+                if not output_path.exists():
+                    break
+                counter += 1
+
+            print(f"📝 Output will be: {output_filename}")
+
+            # Burn subtitles using ffmpeg
+            self._burn_subtitles_ffmpeg(
+                video_file,
+                subtitle_file,
+                output_path,
+                font_size,
+                font_color,
+                outline_color,
+                outline_width,
+                position,
+                margin_v
+            )
+
+            print(f"✅ Subtitle burn-in completed: {output_path}")
+            return (str(output_path),)
+
+        except Exception as e:
+            error_msg = f"❌ Error during subtitle burn-in: {str(e)}"
+            print(error_msg)
+            raise RuntimeError(error_msg)
+
+    def _burn_subtitles_ffmpeg(self, video_file, subtitle_file, output_path,
+                               font_size, font_color, outline_color, outline_width,
+                               position, margin_v):
+        """
+        Use ffmpeg to burn subtitles into video.
+
+        Args:
+            video_file (Path): Input video file
+            subtitle_file (Path): Subtitle file
+            output_path (Path): Output video file
+            font_size (int): Font size
+            font_color (str): Font color
+            outline_color (str): Outline color
+            outline_width (int): Outline width
+            position (str): Position (bottom/top/middle)
+            margin_v (int): Vertical margin
+        """
+        # Color mapping to ASS format (BGR format in hex)
+        color_map = {
+            "white": "&H00FFFFFF",
+            "yellow": "&H0000FFFF",
+            "black": "&H00000000",
+            "red": "&H000000FF",
+            "green": "&H0000FF00",
+            "blue": "&H00FF0000",
+            "cyan": "&H00FFFF00",
+            "magenta": "&H00FF00FF",
+            "dark_gray": "&H00404040",
+            "none": "&H00000000"
+        }
+
+        # Position alignment (ASS format)
+        # Alignment: 1=left, 2=center, 3=right
+        # + 0=bottom, 4=middle, 8=top
+        position_map = {
+            "bottom": 2,  # Bottom center
+            "middle": 6,  # Middle center
+            "top": 8      # Top center
+        }
+
+        # Build subtitle style string
+        primary_color = color_map.get(font_color, "&H00FFFFFF")
+        outline_col = color_map.get(outline_color, "&H00000000")
+        alignment = position_map.get(position, 2)
+
+        # Escape special characters for Windows paths in ffmpeg filter
+        subtitle_path_escaped = str(subtitle_file.absolute()).replace('\\', '/').replace(':', '\\:')
+
+        # Build force_style parameters
+        style_params = [
+            f"FontSize={font_size}",
+            f"PrimaryColour={primary_color}",
+            f"OutlineColour={outline_col}",
+            f"Outline={outline_width}",
+            f"Alignment={alignment}",
+            f"MarginV={margin_v}",
+            "Bold=0",
+            "BorderStyle=1"  # Outline + shadow
+        ]
+
+        force_style = ",".join(style_params)
+
+        # Build ffmpeg command
+        # Use subtitles filter to burn in srt file
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', str(video_file),
+            '-vf', f"subtitles='{subtitle_path_escaped}':force_style='{force_style}'",
+            '-c:v', 'libx264',           # Use H.264 codec
+            '-crf', '18',                 # High quality (lower = better, 18 = visually lossless)
+            '-preset', 'medium',          # Encoding speed/quality balance
+            '-c:a', 'copy',               # Copy audio without re-encoding
+            '-y',                         # Overwrite output file
+            str(output_path)
+        ]
+
+        print(f"🎨 Font: {font_size}pt {font_color} with {outline_color} outline")
+        print(f"📍 Position: {position} (margin: {margin_v}px)")
+        print(f"🎥 Running ffmpeg to burn subtitles...")
+
+        try:
+            # Run ffmpeg
+            result = subprocess.run(
+                ffmpeg_cmd,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            print(f"✅ ffmpeg completed successfully")
+
+        except subprocess.CalledProcessError as e:
+            error_msg = f"ffmpeg failed: {e.stderr}"
+            print(f"❌ {error_msg}")
+            raise RuntimeError(error_msg)
+        except FileNotFoundError:
+            raise RuntimeError(
+                "ffmpeg not found. Please install ffmpeg and add it to your PATH."
+            )
+
+
 class VideoStitching:
     """
     Video Stitching Node
@@ -300,4 +572,4 @@ class VideoStitching:
 
 
 # Export nodes from this module
-__all__ = ['VideoStitching']
+__all__ = ['SubtitleBurnIn', 'VideoStitching']

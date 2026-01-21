@@ -10,13 +10,14 @@ License: MIT
 """
 
 from .audio_nodes import AudioPadToFrames
-from .video_nodes import VideoStitching
+from .video_nodes import VideoStitching, SubtitleBurnIn
 from .image_nodes import SaveImageOptional
 
 # Central registry for all nodes in this package
 NODE_CLASS_MAPPINGS = {
     "AudioPadToFrames": AudioPadToFrames,
     "VideoStitching": VideoStitching,
+    "SubtitleBurnIn": SubtitleBurnIn,
     "SaveImageOptional": SaveImageOptional,
 }
 
@@ -24,11 +25,12 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "AudioPadToFrames": "🔇 Audio Pad to Frames",
     "VideoStitching": "🎬 Video Stitching",
+    "SubtitleBurnIn": "📝 Subtitle Burn-In",
     "SaveImageOptional": "💾 Save Image Optional",
 }
 
 # Package metadata
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
 
 # Print initialization message

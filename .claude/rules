@@ -1,0 +1,50 @@
+# Claude Code Rules for ComfyUI-JSNodes
+
+## File Path Guidelines
+
+### Edit Tool Path Format (CRITICAL)
+When using the Edit tool on Windows, ALWAYS use the standard Windows path format with backslashes:
+
+✅ CORRECT:
+- C:\Users\rongs\source\repos\ComfyUI-JSNodes\video_nodes.py
+- C:\Users\rongs\source\repos\ComfyUI-JSNodes\audio_nodes.py
+
+❌ WRONG (will fail with "file does not exist"):
+- /c/Users/rongs/source/repos/ComfyUI-JSNodes/video_nodes.py
+- /Users/rongs/source/repos/ComfyUI-JSNodes/video_nodes.py
+- ./video_nodes.py (relative paths may fail)
+
+### Bash Tool Path Format
+For Bash tool commands (cat, grep, ls, etc.), use Unix-style paths or relative paths:
+- ./video_nodes.py
+- /c/Users/rongs/source/repos/ComfyUI-JSNodes/video_nodes.py
+
+### Troubleshooting Edit Tool Failures
+If Edit tool reports "file does not exist":
+1. Run `pwd` to confirm current directory
+2. Run `ls -F` to verify file exists
+3. Use FULL Windows path: C:\Users\...\filename.py
+4. As last resort, use Bash tool with cat/echo to overwrite file
+
+## ComfyUI Custom Node Development
+
+### Input Type Guidelines
+- Use proper ComfyUI input types (STRING, INT, FLOAT, IMAGE, AUDIO, etc.)
+- For connectable inputs from other nodes, use the exact type the upstream node outputs
+  - Example: VHS Video Combine outputs `VHS_FILENAMES` type
+  - Don't use `STRING` with multiline when you need a connectable input!
+
+### Parser Guidelines
+- When receiving input from connected nodes, expect Python data structures (list, dict), NOT JSON strings
+- Always check type first: `if isinstance(data, str): json.loads(data)`
+- Handle both direct connections (Python objects) and fallback string inputs
+
+### Node Categories
+- Use hierarchical categories: "JSNodes/Audio", "JSNodes/Video", "JSNodes/Image"
+- Keep consistent naming and organization
+
+## Project Structure
+- Modular file naming: audio_nodes.py, video_nodes.py, image_nodes.py
+- Central registration in __init__.py
+- Comprehensive docstrings with examples
+- Version tracking in __init__.py

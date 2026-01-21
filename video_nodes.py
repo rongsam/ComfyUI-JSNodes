@@ -234,6 +234,17 @@ class VideoStitching:
         Returns:
             Path: Path to the stitched output video
         """
+        # Find next available sequential number for output filename
+        counter = 1
+        while True:
+            output_filename = f"{output_prefix}_{counter:05d}.mp4"
+            output_path = output_dir / output_filename
+            if not output_path.exists():
+                break
+            counter += 1
+
+        print(f"📝 Output will be: {output_filename}")
+
         # Create a temporary file list for ffmpeg concat
         concat_file = output_dir / f"{output_prefix}_concat_list.txt"
 
@@ -244,9 +255,6 @@ class VideoStitching:
                 # Convert Windows backslashes to forward slashes
                 escaped_path = str(video.absolute()).replace('\\', '/')
                 f.write(f"file '{escaped_path}'\n")
-
-        # Output filename
-        output_path = output_dir / f"{output_prefix}_stitched.mp4"
 
         # Build ffmpeg command (concat without re-encoding)
         ffmpeg_cmd = [

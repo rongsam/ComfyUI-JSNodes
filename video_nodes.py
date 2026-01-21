@@ -129,6 +129,10 @@ class VideoStitching:
         Returns:
             str: Video file path
         """
+        # DEBUG: Print what we actually received
+        print(f"🔍 DEBUG: video_info type = {type(video_info)}")
+        print(f"🔍 DEBUG: video_info value = {video_info}")
+
         data = video_info
 
         # If it's a string, try to parse as JSON

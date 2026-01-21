@@ -42,11 +42,7 @@ class VideoStitching:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_info": ("STRING", {
-                    "default": "",
-                    "multiline": True,
-                    "tooltip": "JSON output from VHS Video Combine node"
-                }),
+                "video_info": ("VHS_FILENAMES",),  # Connectable input from VHS Video Combine
                 "output_prefix": ("STRING", {
                     "default": "stitched",
                     "multiline": False,

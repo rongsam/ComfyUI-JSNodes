@@ -30,8 +30,8 @@ class VideoStitching:
         output_path (STRING): Path to the stitched video file
 
     Example:
-        If VHS generates "video_0003.mp4", this node will find all files like
-        "video_0001.mp4", "video_0002.mp4", "video_0003.mp4", etc., and stitch
+        If VHS generates "video_00003.mp4", this node will find all files like
+        "video_00001.mp4", "video_00002.mp4", "video_00003.mp4", etc., and stitch
         them into a single file named "{output_prefix}_stitched.mp4"
     """
 
@@ -74,8 +74,7 @@ class VideoStitching:
         """
         try:
             # Parse the JSON from VHS Video Combine
-            video_data = self._parse_video_info(video_info)
-            video_path = video_data.get('filename') or video_data.get('path')
+            video_path = self._parse_video_info(video_info)
 
             if not video_path:
                 raise ValueError("Could not find video path in the provided JSON")
@@ -119,26 +118,60 @@ class VideoStitching:
         """
         Parse the JSON output from VHS Video Combine node.
 
+        VHS Video Combine returns format like:
+        [
+            true,
+            [
+                "C:\\path\\to\\video_00003.png",
+                "C:\\path\\to\\video_00003.mp4"
+            ]
+        ]
+
         Args:
             video_info (str): JSON string or plain path
 
         Returns:
-            dict: Parsed video information
+            str: Video file path
         """
         # Try to parse as JSON first
         try:
             data = json.loads(video_info)
-            return data
+
+            # Handle VHS Video Combine format: [bool, [png_path, mp4_path]]
+            if isinstance(data, list) and len(data) >= 2:
+                # Second element should be array of file paths
+                if isinstance(data[1], list) and len(data[1]) >= 2:
+                    # Find the .mp4 file (should be second item)
+                    for file_path in data[1]:
+                        if isinstance(file_path, str) and file_path.lower().endswith('.mp4'):
+                            print(f"✓ Parsed VHS output, found MP4: {file_path}")
+                            return file_path
+                    # If no .mp4 found, take the last item
+                    return data[1][-1]
+
+            # Handle dict format (legacy or other sources)
+            elif isinstance(data, dict):
+                return data.get('filename') or data.get('path')
+
+            # Handle simple string in array
+            elif isinstance(data, list) and len(data) > 0:
+                return str(data[0])
+
         except json.JSONDecodeError:
             # If not JSON, assume it's a direct file path
-            return {"filename": video_info.strip()}
+            video_info = video_info.strip()
+            if video_info:
+                print(f"✓ Using direct path: {video_info}")
+                return video_info
+
+        raise ValueError("Unable to parse video_info. Expected VHS Video Combine JSON output or file path.")
 
     def _extract_prefix_pattern(self, filename):
         """
         Extract the prefix pattern from a filename.
 
         Examples:
-            "video_0003.mp4" -> "video"
+            "video_00003.mp4" -> "video"
             "output_0001.mp4" -> "output"
             "render_00042.mp4" -> "render"
 
@@ -152,7 +185,7 @@ class VideoStitching:
         name_without_ext = os.path.splitext(filename)[0]
 
         # Match pattern: prefix followed by underscore and numbers
-        # e.g., "video_0003" -> "video"
+        # e.g., "video_00003" -> "video"
         match = re.match(r'^(.+?)_\d+$', name_without_ext)
 
         if match:
@@ -199,7 +232,8 @@ class VideoStitching:
         # Write the concat file format required by ffmpeg
         with open(concat_file, 'w', encoding='utf-8') as f:
             for video in video_files:
-                # Use absolute path and escape special characters
+                # Use absolute path and escape special characters for ffmpeg
+                # Convert Windows backslashes to forward slashes
                 escaped_path = str(video.absolute()).replace('\\', '/')
                 f.write(f"file '{escaped_path}'\n")
 

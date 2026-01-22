@@ -9,8 +9,8 @@ Repository: https://github.com/rongsam/ComfyUI-JSNodes
 License: MIT
 """
 
-from .audio_nodes import AudioPadToFrames
-from .video_nodes import VideoStitching, SubtitleBurnIn, SaveSRT
+from .audio_nodes import AudioPadToFrames, SaveSRT
+from .video_nodes import VideoStitching, SubtitleBurnIn
 from .image_nodes import SaveImageOptional
 
 # Central registry for all nodes in this package

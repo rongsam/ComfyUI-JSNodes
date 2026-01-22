@@ -10,7 +10,7 @@ License: MIT
 """
 
 from .audio_nodes import AudioPadToFrames
-from .video_nodes import VideoStitching, SubtitleBurnIn
+from .video_nodes import VideoStitching, SubtitleBurnIn, SaveSRT
 from .image_nodes import SaveImageOptional
 
 # Central registry for all nodes in this package
@@ -19,6 +19,7 @@ NODE_CLASS_MAPPINGS = {
     "VideoStitching": VideoStitching,
     "SubtitleBurnIn": SubtitleBurnIn,
     "SaveImageOptional": SaveImageOptional,
+    "SaveSRT": SaveSRT,
 }
 
 # Display names that appear in ComfyUI interface
@@ -27,6 +28,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "VideoStitching": "🎬 Video Stitching",
     "SubtitleBurnIn": "📝 Subtitle Burn-In",
     "SaveImageOptional": "💾 Save Image Optional",
+    "SaveSRT": "💾 Save SRT",
 }
 
 # Package metadata

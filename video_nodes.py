@@ -387,19 +387,19 @@ class VideoStitching:
         Parse the output from VHS Video Combine node.
 
         VHS Video Combine returns format like:
-        [
-            True,
+        (
+            True/False,  # Persistence flag: True = saved permanently, False = temp only
             [
                 "C:\\path\\to\\video_00003.png",
                 "C:\\path\\to\\video_00003.mp4"
             ]
-        ]
+        )
 
         Args:
-            video_info: Can be a list/dict (direct from VHS) or JSON string
+            video_info: Can be a tuple/list (direct from VHS) or JSON string
 
         Returns:
-            str: Video file path
+            str: Video file path, or None if video not persisted
         """
         # DEBUG: Print what we actually received
         print(f"🔍 DEBUG: video_info type = {type(video_info)}")
@@ -419,8 +419,17 @@ class VideoStitching:
                     return video_info
                 raise ValueError("Unable to parse video_info")
 
-        # Handle VHS Video Combine format: (bool, [png_path, mp4_path]) or [bool, [png_path, mp4_path]]
+        # Handle VHS Video Combine format: (bool, [png_path, mp4_path])
         if isinstance(data, (list, tuple)) and len(data) >= 2:
+            # Check if first element is a boolean indicating persistence
+            if isinstance(data[0], bool):
+                if not data[0]:
+                    # Video not persisted (only in temp folder), skip stitching
+                    print("⚠️ Video not persisted (temporary file), skipping stitching")
+                    return None
+                else:
+                    print("✓ Video is persisted, proceeding with stitching")
+
             # Second element should be array of file paths
             if isinstance(data[1], (list, tuple)) and len(data[1]) >= 2:
                 # Find the .mp4 file (should be second item)

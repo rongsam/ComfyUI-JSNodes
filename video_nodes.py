@@ -334,18 +334,20 @@ class VideoStitching:
         Main execution function that stitches multiple videos into one.
 
         Args:
-            video_info (str): JSON string containing video file information
+            video_info: VHS_FILENAMES data structure from VHS Video Combine
             output_prefix (str): Prefix for the output filename
 
         Returns:
-            tuple: Path to the stitched video file
+            tuple: Path to the stitched video file, or empty string if skipped
         """
         try:
-            # Parse the JSON from VHS Video Combine
+            # Parse the data from VHS Video Combine
             video_path = self._parse_video_info(video_info)
 
+            # Check if video was persisted (None means temp file only)
             if not video_path:
-                raise ValueError("Could not find video path in the provided JSON")
+                print("⏭️ Skipping video stitching (video not persisted or only in temp folder)")
+                return ("",)  # Return empty string to indicate skip
 
             print(f"📹 Source video: {video_path}")
 

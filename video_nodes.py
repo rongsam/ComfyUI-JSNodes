@@ -135,6 +135,11 @@ class SubtitleBurnIn:
             tuple: Path to the output video file
         """
         try:
+            # Clean up paths - remove surrounding quotes that Windows Explorer's
+            # "Copy as path" feature may add
+            video_path = video_path.strip().strip('"')
+            subtitle_path = subtitle_path.strip().strip('"')
+
             # Validate input files
             video_file = Path(video_path)
             subtitle_file = Path(subtitle_path)

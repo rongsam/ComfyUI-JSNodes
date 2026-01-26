@@ -12,6 +12,7 @@ License: MIT
 from .audio_nodes import AudioPadToFrames, SaveSRT
 from .video_nodes import VideoStitching, SubtitleBurnIn
 from .image_nodes import SaveImageOptional
+from .api_nodes import OllamaReleaseVRAM
 
 # Central registry for all nodes in this package
 NODE_CLASS_MAPPINGS = {
@@ -20,6 +21,7 @@ NODE_CLASS_MAPPINGS = {
     "SubtitleBurnIn": SubtitleBurnIn,
     "SaveImageOptional": SaveImageOptional,
     "SaveSRT": SaveSRT,
+    "OllamaReleaseVRAM": OllamaReleaseVRAM,
 }
 
 # Display names that appear in ComfyUI interface
@@ -29,6 +31,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "SubtitleBurnIn": "📝 Subtitle Burn-In",
     "SaveImageOptional": "💾 Save Image Optional",
     "SaveSRT": "💾 Save SRT",
+    "OllamaReleaseVRAM": "🧠 Release VRAM from Ollama",
 }
 
 # Package metadata

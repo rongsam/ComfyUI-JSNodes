@@ -13,6 +13,11 @@ from .audio_nodes import AudioPadToFrames, SaveSRT
 from .video_nodes import VideoStitching, SubtitleBurnIn
 from .image_nodes import SaveImageOptional
 from .api_nodes import OllamaReleaseVRAM
+from .h3_nodes import H3VideoPreset, H3LongVideoSize, H3CenterCropVideo
+from .digital_human_nodes import (
+    DemoClipInputs, DemoClipResult, DemoClipTrim, DemoFinishVideo, DemoInfiniteTalkClips,
+    DemoTalkAudioFeatures,
+)
 
 # Central registry for all nodes in this package
 NODE_CLASS_MAPPINGS = {
@@ -22,6 +27,15 @@ NODE_CLASS_MAPPINGS = {
     "SaveImageOptional": SaveImageOptional,
     "SaveSRT": SaveSRT,
     "OllamaReleaseVRAM": OllamaReleaseVRAM,
+    "H3VideoPreset": H3VideoPreset,
+    "H3LongVideoSize": H3LongVideoSize,
+    "H3CenterCropVideo": H3CenterCropVideo,
+    "DemoInfiniteTalkClips": DemoInfiniteTalkClips,
+    "DemoClipInputs": DemoClipInputs,
+    "DemoClipTrim": DemoClipTrim,
+    "DemoClipResult": DemoClipResult,
+    "DemoFinishVideo": DemoFinishVideo,
+    "DemoTalkAudioFeatures": DemoTalkAudioFeatures,
 }
 
 # Display names that appear in ComfyUI interface
@@ -36,8 +50,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 
 # Package metadata
 __version__ = "0.4.0"
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
+WEB_DIRECTORY = "./web"
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']
 
-# Print initialization message
-print(f"🚀 ComfyUI-JSNodes v{__version__} loaded successfully!")
-print(f"   → Loaded {len(NODE_CLASS_MAPPINGS)} custom node(s)")
+print(f"ComfyUI-JSNodes v{__version__}: loaded {len(NODE_CLASS_MAPPINGS)} custom nodes.")
